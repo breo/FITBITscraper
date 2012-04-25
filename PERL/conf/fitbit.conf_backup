@@ -1,0 +1,8 @@
+{
+   # Available from fitbit profile URL
+    'user_id' => '22DTHG',
+     # Populated by cookie
+    'sid' => '7A2B844200E0EF7594A1ED4E57571AE3',              
+    'uid' => '429236',
+    'u' => '.2|429236|4600F90D-9D2B-A295-0E57-793774EF8CA1|1328624961564|31536000'
+};
