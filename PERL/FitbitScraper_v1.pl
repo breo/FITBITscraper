@@ -2,9 +2,18 @@
 
 ## Cambiar uso de folders: relativos no absolutos
 
-use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/";
-use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/conf";
-use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/log";
+use FindBin;
+use lib "$FindBin::Bin";
+
+
+#use lib "$ENV{HOME}/Desktop/FITBITscraper/PERL/";
+#use lib "$ENV{HOME}/Desktop/FITBITscraper/PERL/conf";
+#use lib "$ENV{HOME}/Desktop/FITBITscraper/PERL/log";
+
+
+#use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/";
+#use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/conf";
+#use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/log";
 
 use strict;
 use warnings;
@@ -22,10 +31,25 @@ use FitbitClient;
 use POSIX;
 use Text::CSV;
 
+
+#use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/";
+#use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/conf";
+#use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/log";
+
+
+my $currentPath = getcwd;
+
 #Users configuration 
 my $usersFileString = 'users.fitbit';	#name of the users file
 my $daysForCollecting;					#number of days for collecting data (steps, sleep, day activity) Comes from arguments
 my $daysAccumulated;					#number of total days for the accumulated data (for the historical graph) Comes from arguments
+
+
+my $confDir = $currentPath . '/PERL/conf';
+my $usersFile =  $currentPath . '/PERL/users.fitbit';
+my $datesFilePath = $currentPath . '/PERL/dates.fitbit';
+my $confFilePath = $currentPath . '/PERL/conf/fitbit.conf';
+my $logDebugFilePath = $currentPath . '/PERL/conf/logger.conf';
 
 #Arrays with users' information
 my @userNames;			
@@ -82,10 +106,13 @@ print "\n**** Number of days for collecting: " . $daysForCollecting . "\n";
 print "**** Number of days for the historical data: " . $daysAccumulated . "\n\n";
 
 
+## Creates /log/debug.conf file
+CreateLoggerConfFile();
+
 ## Reads the Users file
 ReadUsersFile();
 			
-##Reads Dates File
+## Reads Dates File
 ReadDatesFile();
 			
 ## Loop for collecting data from each user
@@ -132,8 +159,7 @@ exit;
 
 #READS the Users file for download its information
 sub ReadUsersFile {
-	
-	my $usersFile = '/home/breo/QtSDK/FitbitScrapper/PERL/users.fitbit';
+
 	
 	##my $usersFile = $usersFileString;
     my $csv = Text::CSV->new();
@@ -163,7 +189,7 @@ sub ReadUsersFile {
 #READS the Dates File
 sub ReadDatesFile {
 	
-	my $datesFilePath = '/home/breo/QtSDK/FitbitScrapper/PERL/dates.fitbit';
+	
 	
     my $datesFile = Text::CSV->new();
 
@@ -305,17 +331,16 @@ sub CreateConfFile {
     #		'uid' => '429236',
     #		'u' => '.2|429236|4600F90D-9D2B-A295-0E57-793774EF8CA1|1328624961564|31536000'
 	#	};
-	
-	my $dir = "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/conf/";
 
-	unless(-d $dir){
-		mkdir $dir or die;
+	unless(-d $confDir){
+		mkdir $confDir or die;
 	};
 	
 	
 	##system("mkdir conf") if !-e "configuration";
 	
-	open( CONF_FILE, ">conf/fitbit.conf" ) or die "Can't open Configuration file!";
+	#open( CONF_FILE, ">conf/fitbit.conf" ) or die "Can't open Configuration file!";
+	open( CONF_FILE, ">" . $confFilePath ) or die "Can't open Configuration file!";
 	
 	print CONF_FILE "{ \n";
 	print CONF_FILE "# Available from fitbit profile URL\n";
@@ -465,3 +490,39 @@ sub ExtractData {
 	    $day += 86400;
 	}   
 }#function
+
+
+#CREATES THE CONFIGURATION FILE
+#USAGE: CreateConfFile($user_id, $sid, $uid, $u);
+sub CreateLoggerConfFile {
+	
+	### Creates the file ../PERL/conf/logger.conf for being used on FitbitClient.pm ##########################################
+	# 
+	#log4perl.rootLogger=INFO, LOGFILE
+	#   
+	#log4perl.appender.LOGFILE=Log::Log4perl::Appender::File
+	#log4perl.appender.LOGFILE.filename=/home/breo/QtSDK/FitbitScrapper/PERL/log/debug.log
+	#log4perl.appender.LOGFILE.mode=append
+	#    
+	#log4perl.appender.LOGFILE.layout=PatternLayout
+	#log4perl.appender.LOGFILE.layout.ConversionPattern=%d %p> %F{1}:%L %M - %m%n
+	
+	my $pathLoggerFileString = "log4perl.appender.LOGFILE.filename=" . $logDebugFilePath . "\n";
+	
+	open( LOGGERCONF_FILE, ">" . $logDebugFilePath ) or die "Can't open Configuration file!";
+	
+	print LOGGERCONF_FILE "\n";
+	print LOGGERCONF_FILE "log4perl.rootLogger=INFO, LOGFILE\n";
+	print LOGGERCONF_FILE "\n";
+	print LOGGERCONF_FILE "log4perl.appender.LOGFILE=Log::Log4perl::Appender::File\n";
+	print LOGGERCONF_FILE  $pathLoggerFileString;
+	print LOGGERCONF_FILE "log4perl.appender.LOGFILE.mode=append\n";
+	print LOGGERCONF_FILE "\n";
+	print LOGGERCONF_FILE "log4perl.appender.LOGFILE.layout=PatternLayout\n";
+	print LOGGERCONF_FILE "log4perl.appender.LOGFILE.layout.ConversionPattern=%d %p> %F{1}:%L %M - %m%n";
+	
+	close(LOGGERCONF_FILE);
+	
+	print ("\nCreated debug.conf file\n");
+	
+}

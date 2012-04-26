@@ -9,7 +9,11 @@
 
 package FitbitClient;
 
-use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/";
+#use lib "$ENV{HOME}/QtSDK/FitbitScrapper/PERL/";
+use lib "$ENV{HOME}/Desktop/FITBITscraper/PERL/";
+#use FindBin;
+#use lib "$FindBin::Bin";
+
 
 use LWP::UserAgent;
 use HTTP::Request;
@@ -43,10 +47,11 @@ sub new {
     $self->{_ua}->agent("FitBit Perl API/1.0");
 
     bless $self, $class;
-    
-            
+                
     # Init logger
-    Log::Log4perl->init("/home/breo/QtSDK/FitbitScrapper/PERL/conf/logger.conf");
+    my $currentPath = getcwd;
+    my $loggerFilePath = $currentPath . '/PERL/conf/logger.conf';
+    Log::Log4perl->init( $loggerFilePath );
 
     $self->{_logger} = get_logger();
 
@@ -87,6 +92,11 @@ sub _load_fitbit_config {
     my ($filename) = @_;
 
     $/ = "";
+    
+    #Neccessary to correct the Directory
+    my $currentPath = getcwd;
+    my $filename = $currentPath . '/PERL/conf/fitbit.conf';
+    
     open( CONFIG, "$filename" ) or die "Can't open config $filename!";
     my $config_file = <CONFIG>;
     close(CONFIG);
